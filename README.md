@@ -7,7 +7,7 @@
 
 TMUX MCP gives AI agents a real persistent terminal.
 
-Most command tools are stateless: run a command, return output, forget the terminal. Real development is not like that. Dev servers stay alive. REPLs ask follow-up questions. Tests stream logs. Debuggers need keys. A human can attach, watch, type, tmux_interrupt, and continue.
+Most command tools are stateless: run a command, return output, forget the terminal. Real development is not like that. Dev servers stay alive. REPLs ask follow-up questions. Tests stream logs. Debuggers need keys. A human can attach, watch, type, interrupt, and continue.
 
 This project exposes those human-terminal primitives through a strict Model Context Protocol server backed by a dedicated tmux socket.
 
