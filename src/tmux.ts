@@ -31,7 +31,7 @@ export class TmuxController {
       const stderr = error?.stderr ? String(error.stderr) : "";
       const stdout = error?.stdout ? String(error.stdout) : "";
       const message = stderr.trim() || stdout.trim() || error?.message || "tmux command failed";
-      throw new Error(message);
+      throw new Error(message, { cause: error });
     }
   }
 
