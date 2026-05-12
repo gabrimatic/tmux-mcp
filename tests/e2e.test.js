@@ -119,6 +119,27 @@ test("MCP stdio server exposes a full persistent terminal workflow", async () =>
     assert.equal(denied.isError, true);
     assert.match(denied.content[0].text, /outside allowed roots/);
 
+    const deniedLog = await client.callTool({
+      name: "tmux_start_logging",
+      arguments: { target: session, path: join(tmpdir(), `tmux-mcp-outside-${Date.now()}.log`) },
+    });
+    assert.equal(deniedLog.isError, true);
+    assert.match(deniedLog.content[0].text, /log path is outside allowed roots/);
+
+    const deniedStartupCommand = await client.callTool({
+      name: "tmux_create_session",
+      arguments: { name: `${session}-danger`, cwd: root, command: "rm -rf /" },
+    });
+    assert.equal(deniedStartupCommand.isError, true);
+    assert.match(deniedStartupCommand.content[0].text, /dangerous command policy/);
+
+    const deniedShell = await client.callTool({
+      name: "tmux_create_session",
+      arguments: { name: `${session}-shell`, cwd: root, shell: "zsh" },
+    });
+    assert.equal(deniedShell.isError, true);
+    assert.match(deniedShell.content[0].text, /Shell must be an absolute path/);
+
     const hint = await client.callTool({
       name: "tmux_attach_hint",
       arguments: { target: session },

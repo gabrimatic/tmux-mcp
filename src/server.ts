@@ -118,6 +118,7 @@ export function createServer(config: ServerConfig): McpServer {
       shell: z.string().optional(),
       window_name: z.string().optional(),
       command: z.string().optional().describe("Optional startup command run in the session shell."),
+      allow_dangerous: z.boolean().default(false),
     },
     outputSchema: {
       correlation_id: Correlation,
@@ -126,12 +127,13 @@ export function createServer(config: ServerConfig): McpServer {
       attachCommand: z.string(),
     },
     annotations: LOCAL_MUTATION,
-  }, async ({ name, cwd, shell, window_name, command }) => tmux.createSession({
+  }, async ({ name, cwd, shell, window_name, command, allow_dangerous }) => tmux.createSession({
     name,
     cwd,
     shell,
     windowName: window_name,
     command,
+    allowDangerous: allow_dangerous,
   }));
 
   tool(server, audit, "tmux_list_panes", {
@@ -157,11 +159,12 @@ export function createServer(config: ServerConfig): McpServer {
       name: z.string().optional(),
       cwd: z.string().optional(),
       command: z.string().optional(),
+      allow_dangerous: z.boolean().default(false),
     },
     outputSchema: OkOutput,
     annotations: LOCAL_MUTATION,
-  }, async ({ target, name, cwd, command }) => {
-    await tmux.createWindow({ target, name, cwd, command });
+  }, async ({ target, name, cwd, command, allow_dangerous }) => {
+    await tmux.createWindow({ target, name, cwd, command, allowDangerous: allow_dangerous });
     return { ok: true };
   });
 
@@ -174,11 +177,12 @@ export function createServer(config: ServerConfig): McpServer {
       percent: z.number().int().min(1).max(99).optional(),
       cwd: z.string().optional(),
       command: z.string().optional(),
+      allow_dangerous: z.boolean().default(false),
     },
     outputSchema: OkOutput,
     annotations: LOCAL_MUTATION,
-  }, async ({ target, horizontal, percent, cwd, command }) => {
-    await tmux.splitPane({ target, horizontal, percent, cwd, command });
+  }, async ({ target, horizontal, percent, cwd, command, allow_dangerous }) => {
+    await tmux.splitPane({ target, horizontal, percent, cwd, command, allowDangerous: allow_dangerous });
     return { ok: true };
   });
 
@@ -380,6 +384,7 @@ export function createServer(config: ServerConfig): McpServer {
       name: SessionName,
       cwd: z.string().optional(),
       command: z.string().optional(),
+      allow_dangerous: z.boolean().default(false),
       log_path: z.string().optional(),
     },
     outputSchema: {
@@ -393,8 +398,8 @@ export function createServer(config: ServerConfig): McpServer {
       next: z.array(z.string()),
     },
     annotations: TERMINAL_INPUT,
-  }, async ({ name, cwd, command, log_path }) => {
-    const created = await tmux.createSession({ name, cwd, windowName: "agent", command });
+  }, async ({ name, cwd, command, allow_dangerous, log_path }) => {
+    const created = await tmux.createSession({ name, cwd, windowName: "agent", command, allowDangerous: allow_dangerous });
     const panes = await tmux.listPanes(name);
     const pane = panes[0]?.paneId ?? name;
     if (log_path) await tmux.startLogging(pane, log_path);
@@ -491,7 +496,7 @@ function nextActionForError(message: string): string {
     return "Create the session under an allowed root or restart the server with an explicit --allowed-root.";
   }
   if (message.includes("dangerous command policy")) {
-    return "Ask for explicit approval, then retry tmux_run_command with allow_dangerous=true if still necessary.";
+    return "Ask for explicit approval, then retry with allow_dangerous=true if still necessary.";
   }
   if (message.includes("can't find session") || message.includes("can't find pane")) {
     return "Call tmux_list_sessions and tmux_list_panes, then retry with a valid target.";
@@ -522,7 +527,8 @@ Safety notes:
 - This controls a real shell. Treat it like direct terminal access.
 - The dedicated tmux socket isolates these sessions from normal tmux sessions.
 - cwd is limited unless the server is started with \`--allow-any-cwd\`.
-- \`tmux_run_command\` blocks a small set of obviously destructive patterns unless \`allow_dangerous=true\`.
+- \`tmux_run_command\` and startup \`command\` fields block a small set of obviously destructive patterns unless \`allow_dangerous=true\`.
+- Pane log paths must stay under allowed roots unless \`--allow-any-cwd\` is set.
 - \`tmux_send_text\` can still type anything, so agent policy and user approvals still matter.
 `;
 }

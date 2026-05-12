@@ -4,7 +4,7 @@
   "description": "A tmux-backed MCP server that gives AI agents a persistent, human-attachable terminal.",
   "type": "module",
   "bin": {
-    "tmux-mcp": "./dist/cli.js"
+    "tmux-mcp": "./dist/src/cli.js"
   },
   "files": [
     "dist",

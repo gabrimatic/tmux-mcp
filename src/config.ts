@@ -1,6 +1,7 @@
 import { homedir, tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import type { ServerConfig } from "./types.js";
+import { assertShellPath } from "./policy.js";
 
 const DEFAULT_SOCKET = join(tmpdir(), `tmux-mcp-${process.getuid?.() ?? "user"}.sock`);
 const DEFAULT_AUDIT_LOG = join(
@@ -13,7 +14,7 @@ export function defaultConfig(): ServerConfig {
   return {
     tmuxCommand: process.env.TMUX_MCP_TMUX ?? "tmux",
     socketPath: process.env.TMUX_MCP_SOCKET ?? DEFAULT_SOCKET,
-    shell: process.env.SHELL ?? "/bin/zsh",
+    shell: assertShellPath(process.env.SHELL ?? "/bin/zsh"),
     allowedRoots: [resolve(process.cwd())],
     allowAnyCwd: false,
     auditLogPath: process.env.TMUX_MCP_AUDIT_LOG ?? DEFAULT_AUDIT_LOG,
@@ -25,6 +26,7 @@ export function defaultConfig(): ServerConfig {
 
 export function parseArgs(argv: string[]): ServerConfig {
   const config = defaultConfig();
+  let explicitAllowedRoots = false;
 
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
@@ -44,9 +46,13 @@ export function parseArgs(argv: string[]): ServerConfig {
         config.socketPath = next();
         break;
       case "--shell":
-        config.shell = next();
+        config.shell = assertShellPath(next());
         break;
       case "--allowed-root":
+        if (!explicitAllowedRoots) {
+          config.allowedRoots = [];
+          explicitAllowedRoots = true;
+        }
         config.allowedRoots.push(resolve(next()));
         break;
       case "--allow-any-cwd":
@@ -92,8 +98,8 @@ Usage:
 Options:
   --tmux <path>               tmux binary to execute
   --socket <path>             dedicated tmux socket path
-  --shell <path>              shell used for new sessions
-  --allowed-root <path>       allowed cwd root; repeatable
+  --shell <path>              absolute shell path used for new sessions
+  --allowed-root <path>       allowed cwd and pane-log root; repeatable; defaults to startup cwd when omitted
   --allow-any-cwd             allow creating sessions anywhere
   --audit-log <path>          JSONL audit log path
   --audit-include-output      include captured terminal text in audit log

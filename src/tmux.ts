@@ -3,7 +3,14 @@ import { mkdir } from "node:fs/promises";
 import { dirname } from "node:path";
 import { promisify } from "node:util";
 import type { PaneInfo, ServerConfig, SessionInfo, TmuxResult } from "./types.js";
-import { assertCwdAllowed, assertSessionName, assertTarget } from "./policy.js";
+import {
+  assertCommandAllowed,
+  assertCwdAllowed,
+  assertPathAllowed,
+  assertSessionName,
+  assertShellPath,
+  assertTarget,
+} from "./policy.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -41,10 +48,12 @@ export class TmuxController {
     shell?: string;
     windowName?: string;
     command?: string;
+    allowDangerous?: boolean;
   }): Promise<{ session: string; cwd: string; attachCommand: string }> {
     assertSessionName(input.name);
+    if (input.command) assertCommandAllowed(input.command, input.allowDangerous ?? false);
     const cwd = assertCwdAllowed(input.cwd ?? process.cwd(), this.config);
-    const shell = input.shell ?? this.config.shell;
+    const shell = assertShellPath(input.shell ?? this.config.shell);
     const args = ["new-session", "-d", "-s", input.name, "-c", cwd];
     if (input.windowName) args.push("-n", input.windowName);
     args.push(input.command ? `${shellQuote(shell)} -lc ${shellQuote(`${input.command}; exec ${shellQuote(shell)}`)}` : shell);
@@ -111,8 +120,9 @@ export class TmuxController {
     return allForSession ? panes.filter((pane) => pane.session === target) : panes;
   }
 
-  async createWindow(input: { target: string; name?: string; cwd?: string; command?: string }): Promise<void> {
+  async createWindow(input: { target: string; name?: string; cwd?: string; command?: string; allowDangerous?: boolean }): Promise<void> {
     assertTarget(input.target);
+    if (input.command) assertCommandAllowed(input.command, input.allowDangerous ?? false);
     const args = ["new-window", "-t", input.target];
     if (input.name) args.push("-n", input.name);
     if (input.cwd) args.push("-c", assertCwdAllowed(input.cwd, this.config));
@@ -120,8 +130,16 @@ export class TmuxController {
     await this.exec(args);
   }
 
-  async splitPane(input: { target: string; cwd?: string; horizontal?: boolean; percent?: number; command?: string }): Promise<void> {
+  async splitPane(input: {
+    target: string;
+    cwd?: string;
+    horizontal?: boolean;
+    percent?: number;
+    command?: string;
+    allowDangerous?: boolean;
+  }): Promise<void> {
     assertTarget(input.target);
+    if (input.command) assertCommandAllowed(input.command, input.allowDangerous ?? false);
     const args = ["split-window", "-t", input.target];
     args.push(input.horizontal ? "-h" : "-v");
     if (input.percent) args.push("-p", String(input.percent));
@@ -159,8 +177,9 @@ export class TmuxController {
 
   async startLogging(target: string, path: string): Promise<void> {
     assertTarget(target);
-    await mkdir(dirname(path), { recursive: true });
-    await this.exec(["pipe-pane", "-t", target, "-o", `cat >> ${shellQuote(path)}`]);
+    const logPath = assertPathAllowed(path, this.config, "log path");
+    await mkdir(dirname(logPath), { recursive: true });
+    await this.exec(["pipe-pane", "-t", target, "-o", `cat >> ${shellQuote(logPath)}`]);
   }
 
   async stopLogging(target: string): Promise<void> {

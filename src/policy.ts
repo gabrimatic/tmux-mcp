@@ -1,5 +1,7 @@
-import { resolve, relative } from "node:path";
+import { isAbsolute, resolve, relative } from "node:path";
 import type { ServerConfig } from "./types.js";
+
+type RootPolicy = Pick<ServerConfig, "allowedRoots" | "allowAnyCwd">;
 
 const SESSION_RE = /^[A-Za-z0-9_.-]{1,80}$/;
 const TARGET_RE = /^(%[0-9]+|[A-Za-z0-9_.-]{1,80}(:[A-Za-z0-9_.-]{1,80}(\.[0-9]+)?)?)$/;
@@ -25,17 +27,35 @@ export function assertTarget(target: string): void {
   }
 }
 
-export function assertCwdAllowed(cwd: string, config: ServerConfig): string {
-  const resolved = resolve(cwd);
+export function assertShellPath(shell: string): string {
+  if (!isAbsolute(shell)) {
+    throw new Error("Shell must be an absolute path.");
+  }
+  if (/[\s;&|`$<>]/.test(shell)) {
+    throw new Error("Shell path contains unsupported characters.");
+  }
+  return shell;
+}
+
+export function assertCwdAllowed(cwd: string, config: RootPolicy): string {
+  return assertPathAllowed(cwd, config, "cwd");
+}
+
+export function assertPathAllowed(path: string, config: RootPolicy, label = "path"): string {
+  if (!path.trim()) {
+    throw new Error(`${label} must not be empty`);
+  }
+
+  const resolved = resolve(path);
   if (config.allowAnyCwd) return resolved;
 
   const allowed = config.allowedRoots.some((root) => {
     const rel = relative(resolve(root), resolved);
-    return rel === "" || (!rel.startsWith("..") && !resolve(rel).startsWith(".."));
+    return rel === "" || (!rel.startsWith("..") && !isAbsolute(rel));
   });
 
   if (!allowed) {
-    throw new Error(`cwd is outside allowed roots: ${resolved}`);
+    throw new Error(`${label} is outside allowed roots: ${resolved}`);
   }
   return resolved;
 }

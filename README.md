@@ -114,9 +114,10 @@ Inputs:
 
 - `name`: session name
 - `cwd`: optional working directory, must be under an allowed root unless `--allow-any-cwd` is set
-- `shell`: optional shell path
+- `shell`: optional absolute shell path
 - `window_name`: optional initial window name
 - `command`: optional startup command
+- `allow_dangerous`: bypasses the destructive-command denylist for `command` when explicit user approval exists
 
 Returns the session, cwd, and human attach command.
 
@@ -166,6 +167,8 @@ Polls captured output until text appears or a regex matches.
 
 Uses `tmux pipe-pane` to stream future pane output into a local log file.
 
+The log path must be under an allowed root unless `--allow-any-cwd` is set.
+
 ### `tmux_attach_hint`
 
 Returns the exact command a human can run to attach to the agent terminal.
@@ -187,6 +190,9 @@ The server keeps the interface structured:
 - Captured output summarized in audit logs by default.
 - Optional full-output audit logging with `--audit-include-output`.
 - Small denylist for obviously destructive commands in `tmux_run_command`.
+- The same destructive-command denylist applies to startup `command` fields on session, window, split-pane, and god-mode tools.
+- Shell overrides must be absolute paths, not arbitrary shell text.
+- Pane log paths must stay under allowed roots unless `--allow-any-cwd` is set.
 - Human attach command returned explicitly.
 
 This does not replace the agent’s normal approval and sandbox rules. `tmux_send_text` can still type arbitrary input into a real terminal. For untrusted repos, run the server inside a container, VM, or low-privilege user.
@@ -207,8 +213,8 @@ Options:
 |--------|---------|
 | `--tmux <path>` | tmux binary |
 | `--socket <path>` | dedicated tmux socket path |
-| `--shell <path>` | shell for new sessions |
-| `--allowed-root <path>` | repeatable cwd allowlist |
+| `--shell <path>` | absolute shell path for new sessions |
+| `--allowed-root <path>` | repeatable cwd and pane-log allowlist; when omitted, defaults to the server's startup cwd |
 | `--allow-any-cwd` | disable cwd allowlist |
 | `--audit-log <path>` | JSONL audit path |
 | `--audit-include-output` | include captured text in audit log |
