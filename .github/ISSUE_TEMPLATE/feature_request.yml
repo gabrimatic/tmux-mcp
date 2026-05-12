@@ -1,0 +1,19 @@
+name: Feature request
+description: Suggest a terminal-control capability
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What terminal workflow should this make possible?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Describe the MCP tool or behavior you want.
+    validations:
+      required: true

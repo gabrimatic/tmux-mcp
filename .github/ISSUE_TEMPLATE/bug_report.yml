@@ -1,0 +1,25 @@
+name: Bug report
+description: Report a reproducible TMUX MCP issue
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: Include the MCP tool call, tmux state, and relevant output.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Node version, tmux version, client, and TMUX MCP version.
+    validations:
+      required: true
