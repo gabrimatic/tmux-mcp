@@ -94,7 +94,7 @@ export function createServer(config: ServerConfig): McpServer {
     },
   );
 
-  tool(server, audit, "list_sessions", {
+  tool(server, audit, "tmux_list_sessions", {
     title: "List tmux sessions",
     description: "List sessions on the dedicated tmux socket.",
     inputSchema: {},
@@ -109,7 +109,7 @@ export function createServer(config: ServerConfig): McpServer {
     socket: config.socketPath,
   }));
 
-  tool(server, audit, "create_session", {
+  tool(server, audit, "tmux_create_session", {
     title: "Create terminal session",
     description: "Create a detached tmux session in an allowed cwd. Returns an attach command for human inspection.",
     inputSchema: {
@@ -134,7 +134,7 @@ export function createServer(config: ServerConfig): McpServer {
     command,
   }));
 
-  tool(server, audit, "list_panes", {
+  tool(server, audit, "tmux_list_panes", {
     title: "List panes",
     description: "List panes, cwd, active command, pane ids, and target coordinates.",
     inputSchema: {
@@ -149,7 +149,7 @@ export function createServer(config: ServerConfig): McpServer {
     panes: await tmux.listPanes(target),
   }));
 
-  tool(server, audit, "create_window", {
+  tool(server, audit, "tmux_create_window", {
     title: "Create window",
     description: "Create a new tmux window in a session.",
     inputSchema: {
@@ -165,7 +165,7 @@ export function createServer(config: ServerConfig): McpServer {
     return { ok: true };
   });
 
-  tool(server, audit, "split_pane", {
+  tool(server, audit, "tmux_split_pane", {
     title: "Split pane",
     description: "Split a pane vertically or horizontally, optionally in a cwd or with a startup command.",
     inputSchema: {
@@ -182,7 +182,7 @@ export function createServer(config: ServerConfig): McpServer {
     return { ok: true };
   });
 
-  tool(server, audit, "send_text", {
+  tool(server, audit, "tmux_send_text", {
     title: "Send literal text",
     description: "Send literal text to a pane. Set enter=true to press Enter after the text.",
     inputSchema: {
@@ -197,7 +197,7 @@ export function createServer(config: ServerConfig): McpServer {
     return { ok: true };
   });
 
-  tool(server, audit, "send_keys", {
+  tool(server, audit, "tmux_send_keys", {
     title: "Send special keys",
     description: "Send special keys like Enter, Escape, Tab, C-c, C-d, arrows, PageUp, or F1-F12.",
     inputSchema: {
@@ -211,7 +211,7 @@ export function createServer(config: ServerConfig): McpServer {
     return { ok: true };
   });
 
-  tool(server, audit, "run_command", {
+  tool(server, audit, "tmux_run_command", {
     title: "Run command in pane",
     description: "Type a shell command into an existing pane, press Enter, wait briefly, and optionally capture output.",
     inputSchema: {
@@ -235,7 +235,7 @@ export function createServer(config: ServerConfig): McpServer {
     return { ok: true, output };
   });
 
-  tool(server, audit, "capture_output", {
+  tool(server, audit, "tmux_capture_output", {
     title: "Capture terminal output",
     description: "Capture recent visible output from a pane.",
     inputSchema: {
@@ -254,7 +254,7 @@ export function createServer(config: ServerConfig): McpServer {
     output: await tmux.capture(target, lines, include_escapes),
   }));
 
-  tool(server, audit, "wait_for_output", {
+  tool(server, audit, "tmux_wait_for_output", {
     title: "Wait for terminal output",
     description: "Poll captured output until it contains text or matches a regex.",
     inputSchema: {
@@ -285,7 +285,7 @@ export function createServer(config: ServerConfig): McpServer {
     return { matched: false, elapsed_ms: Date.now() - started, output };
   });
 
-  tool(server, audit, "interrupt", {
+  tool(server, audit, "tmux_interrupt", {
     title: "Interrupt pane",
     description: "Send Ctrl-C to a pane.",
     inputSchema: {
@@ -298,7 +298,7 @@ export function createServer(config: ServerConfig): McpServer {
     return { ok: true };
   });
 
-  tool(server, audit, "attach_hint", {
+  tool(server, audit, "tmux_attach_hint", {
     title: "Human attach command",
     description: "Return the exact tmux attach command for the dedicated socket.",
     inputSchema: {
@@ -313,7 +313,7 @@ export function createServer(config: ServerConfig): McpServer {
     attachCommand: tmux.attachCommand(target),
   }));
 
-  tool(server, audit, "resize_pane", {
+  tool(server, audit, "tmux_resize_pane", {
     title: "Resize pane",
     description: "Resize a pane by cells in one direction.",
     inputSchema: {
@@ -328,7 +328,7 @@ export function createServer(config: ServerConfig): McpServer {
     return { ok: true };
   });
 
-  tool(server, audit, "start_logging", {
+  tool(server, audit, "tmux_start_logging", {
     title: "Start pipe-pane logging",
     description: "Stream future pane output into a local log file.",
     inputSchema: {
@@ -346,7 +346,7 @@ export function createServer(config: ServerConfig): McpServer {
     return { ok: true, path };
   });
 
-  tool(server, audit, "stop_logging", {
+  tool(server, audit, "tmux_stop_logging", {
     title: "Stop pipe-pane logging",
     description: "Stop pipe-pane logging for a pane.",
     inputSchema: {
@@ -359,7 +359,7 @@ export function createServer(config: ServerConfig): McpServer {
     return { ok: true };
   });
 
-  tool(server, audit, "kill_target", {
+  tool(server, audit, "tmux_kill_target", {
     title: "Kill pane, window, or session",
     description: "Kill a tmux pane, window, or session on the dedicated socket.",
     inputSchema: {
@@ -373,7 +373,7 @@ export function createServer(config: ServerConfig): McpServer {
     return { ok: true };
   });
 
-  tool(server, audit, "god_mode_terminal", {
+  tool(server, audit, "tmux_god_mode_terminal", {
     title: "Create god-mode terminal",
     description: "Create a ready-to-use persistent terminal with logging, capture, attach hint, and a first command option.",
     inputSchema: {
@@ -407,10 +407,10 @@ export function createServer(config: ServerConfig): McpServer {
       attachCommand: tmux.attachCommand(name),
       output,
       next: [
-        "Use run_command for shell commands that should be typed and captured.",
-        "Use send_text and send_keys for prompts, REPLs, TUI programs, and debuggers.",
-        "Use capture_output or wait_for_output before deciding the next action.",
-        "Leave the session alive for human inspection, or kill_target when done.",
+        "Use tmux_run_command for shell commands that should be typed and captured.",
+        "Use tmux_send_text and tmux_send_keys for prompts, REPLs, TUI programs, and debuggers.",
+        "Use tmux_capture_output or tmux_wait_for_output before deciding the next action.",
+        "Leave the session alive for human inspection, or tmux_kill_target when done.",
       ],
     };
   });
@@ -491,10 +491,10 @@ function nextActionForError(message: string): string {
     return "Create the session under an allowed root or restart the server with an explicit --allowed-root.";
   }
   if (message.includes("dangerous command policy")) {
-    return "Ask for explicit approval, then retry run_command with allow_dangerous=true if still necessary.";
+    return "Ask for explicit approval, then retry tmux_run_command with allow_dangerous=true if still necessary.";
   }
   if (message.includes("can't find session") || message.includes("can't find pane")) {
-    return "Call list_sessions and list_panes, then retry with a valid target.";
+    return "Call tmux_list_sessions and tmux_list_panes, then retry with a valid target.";
   }
   return "Inspect the input and current tmux state, then retry only if the operation is safe.";
 }
@@ -510,20 +510,20 @@ Audit log: \`${config.auditLogPath}\`
 
 Recommended loop:
 
-1. Create a project-scoped session with \`create_session\` or \`god_mode_terminal\`.
-2. Start work with \`run_command\`, \`send_text\`, or \`send_keys\`.
-3. Read state with \`capture_output\` or \`wait_for_output\`.
+1. Create a project-scoped session with \`tmux_create_session\` or \`tmux_god_mode_terminal\`.
+2. Start work with \`tmux_run_command\`, \`tmux_send_text\`, or \`tmux_send_keys\`.
+3. Read state with \`tmux_capture_output\` or \`tmux_wait_for_output\`.
 4. Continue in the same pane instead of restarting the environment.
-5. Return \`attach_hint\` if a human should inspect or join the session.
-6. Use \`interrupt\` or \`kill_target\` for cleanup when appropriate.
+5. Return \`tmux_attach_hint\` if a human should inspect or join the session.
+6. Use \`tmux_interrupt\` or \`tmux_kill_target\` for cleanup when appropriate.
 
 Safety notes:
 
 - This controls a real shell. Treat it like direct terminal access.
 - The dedicated tmux socket isolates these sessions from normal tmux sessions.
 - cwd is limited unless the server is started with \`--allow-any-cwd\`.
-- \`run_command\` blocks a small set of obviously destructive patterns unless \`allow_dangerous=true\`.
-- \`send_text\` can still type anything, so agent policy and user approvals still matter.
+- \`tmux_run_command\` blocks a small set of obviously destructive patterns unless \`allow_dangerous=true\`.
+- \`tmux_send_text\` can still type anything, so agent policy and user approvals still matter.
 `;
 }
 

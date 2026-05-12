@@ -7,7 +7,7 @@
 
 TMUX MCP gives AI agents a real persistent terminal.
 
-Most command tools are stateless: run a command, return output, forget the terminal. Real development is not like that. Dev servers stay alive. REPLs ask follow-up questions. Tests stream logs. Debuggers need keys. A human can attach, watch, type, interrupt, and continue.
+Most command tools are stateless: run a command, return output, forget the terminal. Real development is not like that. Dev servers stay alive. REPLs ask follow-up questions. Tests stream logs. Debuggers need keys. A human can attach, watch, type, tmux_interrupt, and continue.
 
 This project exposes those human-terminal primitives through a strict Model Context Protocol server backed by a dedicated tmux socket.
 
@@ -27,14 +27,14 @@ real shell, dev server, REPL, TUI, debugger
 
 | Capability | MCP tool |
 |------------|----------|
-| Create a persistent terminal | `create_session`, `god_mode_terminal` |
-| Type text or commands incrementally | `send_text`, `run_command` |
-| Send special keys | `send_keys`, `interrupt` |
-| Read terminal state | `capture_output`, `wait_for_output` |
-| Manage layout | `create_window`, `split_pane`, `resize_pane`, `list_panes` |
-| Stream future pane output to a file | `start_logging`, `stop_logging` |
-| Let a human attach | `attach_hint` |
-| Clean up | `kill_target` |
+| Create a persistent terminal | `tmux_create_session`, `tmux_god_mode_terminal` |
+| Type text or commands incrementally | `tmux_send_text`, `tmux_run_command` |
+| Send special keys | `tmux_send_keys`, `tmux_interrupt` |
+| Read terminal state | `tmux_capture_output`, `tmux_wait_for_output` |
+| Manage layout | `tmux_create_window`, `tmux_split_pane`, `tmux_resize_pane`, `tmux_list_panes` |
+| Stream future pane output to a file | `tmux_start_logging`, `tmux_stop_logging` |
+| Let a human attach | `tmux_attach_hint` |
+| Clean up | `tmux_kill_target` |
 
 The agent can keep `npm run dev`, a Rails console, a Python REPL, `vim`, `lldb`, `pytest -f`, or an installer prompt alive inside the same terminal instead of restarting it every turn.
 
@@ -85,13 +85,13 @@ The dedicated socket keeps agent-owned sessions separate from normal tmux sessio
 ## Example Agent Workflow
 
 ```text
-1. create_session(name="app", cwd="/path/to/project")
-2. run_command(target="app", command="npm run dev")
-3. wait_for_output(target="app", text="Local:")
-4. capture_output(target="app", lines=100)
-5. send_keys(target="app", keys=["C-c"])
-6. run_command(target="app", command="npm test")
-7. attach_hint(target="app")
+1. tmux_create_session(name="app", cwd="/path/to/project")
+2. tmux_run_command(target="app", command="npm run dev")
+3. tmux_wait_for_output(target="app", text="Local:")
+4. tmux_capture_output(target="app", lines=100)
+5. tmux_send_keys(target="app", keys=["C-c"])
+6. tmux_run_command(target="app", command="npm test")
+7. tmux_attach_hint(target="app")
 ```
 
 Equivalent raw tmux:
@@ -106,7 +106,7 @@ tmux -S /tmp/codex-agent-tmux.sock attach -t app
 
 ## Tool Reference
 
-### `create_session`
+### `tmux_create_session`
 
 Creates a detached session.
 
@@ -120,13 +120,13 @@ Inputs:
 
 Returns the session, cwd, and human attach command.
 
-### `god_mode_terminal`
+### `tmux_god_mode_terminal`
 
 Creates a ready terminal for agent work. It returns the first pane id, attach command, optional log path, current output, and suggested next actions.
 
 Use it when the agent needs a durable project terminal quickly.
 
-### `run_command`
+### `tmux_run_command`
 
 Types a command into an existing pane, presses Enter, waits briefly, and captures output.
 
@@ -138,13 +138,13 @@ Inputs:
 - `capture_lines`: lines to capture
 - `allow_dangerous`: bypasses the small destructive-command denylist when explicit user approval exists
 
-### `send_text`
+### `tmux_send_text`
 
 Sends literal text. Set `enter=true` to press Enter after the text.
 
 Use this for prompts, REPL input, editor commands, and anything that is not a shell command.
 
-### `send_keys`
+### `tmux_send_keys`
 
 Sends special keys:
 
@@ -154,23 +154,23 @@ Up, Down, Left, Right, Home, End, PageUp, PageDown,
 C-a through C-z, M-a through M-z, F1 through F12
 ```
 
-### `capture_output`
+### `tmux_capture_output`
 
 Captures recent visible pane output with `tmux capture-pane`.
 
-### `wait_for_output`
+### `tmux_wait_for_output`
 
 Polls captured output until text appears or a regex matches.
 
-### `start_logging` and `stop_logging`
+### `tmux_start_logging` and `tmux_stop_logging`
 
 Uses `tmux pipe-pane` to stream future pane output into a local log file.
 
-### `attach_hint`
+### `tmux_attach_hint`
 
 Returns the exact command a human can run to attach to the agent terminal.
 
-### `kill_target`
+### `tmux_kill_target`
 
 Kills a `pane`, `window`, or `session` on the dedicated socket.
 
@@ -186,10 +186,10 @@ The server keeps the interface structured:
 - JSONL audit log for every tool call.
 - Captured output summarized in audit logs by default.
 - Optional full-output audit logging with `--audit-include-output`.
-- Small denylist for obviously destructive commands in `run_command`.
+- Small denylist for obviously destructive commands in `tmux_run_command`.
 - Human attach command returned explicitly.
 
-This does not replace the agent’s normal approval and sandbox rules. `send_text` can still type arbitrary input into a real terminal. For untrusted repos, run the server inside a container, VM, or low-privilege user.
+This does not replace the agent’s normal approval and sandbox rules. `tmux_send_text` can still type arbitrary input into a real terminal. For untrusted repos, run the server inside a container, VM, or low-privilege user.
 
 ## Configuration
 
