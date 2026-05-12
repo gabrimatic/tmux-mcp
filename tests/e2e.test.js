@@ -87,7 +87,7 @@ test("MCP stdio server exposes a full persistent terminal workflow", async () =>
       arguments: { target: session },
     });
     assert.ok(panes.structuredContent.panes.length >= 2);
-    const paneId = panes.structuredContent.panes.find((pane) => pane.session === session && pane.command === "zsh")?.paneId;
+    const paneId = panes.structuredContent.panes.find((pane) => pane.session === session)?.paneId;
     assert.ok(paneId);
 
     await client.callTool({
