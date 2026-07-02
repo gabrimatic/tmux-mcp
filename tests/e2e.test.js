@@ -11,11 +11,12 @@ test("MCP stdio server exposes a full persistent terminal workflow", async () =>
   const socket = join(root, "tmux.sock");
   const audit = join(root, "audit.jsonl");
   const cli = resolve("dist/src/cli.js");
+  const shell = "/bin/sh";
   const session = `e2e-${Date.now()}`;
   const client = new Client({ name: "tmux-mcp-e2e", version: "0.0.0" });
   const transport = new StdioClientTransport({
     command: process.execPath,
-    args: [cli, "--socket", socket, "--allowed-root", root, "--audit-log", audit, "--max-capture-lines", "300"],
+    args: [cli, "--socket", socket, "--shell", shell, "--allowed-root", root, "--audit-log", audit, "--max-capture-lines", "300"],
   });
 
   await client.connect(transport);
@@ -46,10 +47,10 @@ test("MCP stdio server exposes a full persistent terminal workflow", async () =>
 
     const run = await client.callTool({
       name: "tmux_run_command",
-      arguments: { target: session, command: "printf 'hello from mcp\\n'", settle_ms: 500, capture_lines: 50 },
+      arguments: { target: session, command: "printf '%s\\n' \"$((6 * 7))\"", settle_ms: 500, capture_lines: 50 },
     });
-    assert.match(run.content[0].text, /hello from mcp/);
-    assert.match(run.structuredContent.output, /hello from mcp/);
+    assert.equal(run.structuredContent.ok, true);
+    assert.match(run.structuredContent.output, /^42$/m);
 
     const logPath = join(root, "pane.log");
     const logging = await client.callTool({
@@ -60,7 +61,7 @@ test("MCP stdio server exposes a full persistent terminal workflow", async () =>
 
     await client.callTool({
       name: "tmux_send_text",
-      arguments: { target: session, text: "printf 'typed text works\\n'" },
+      arguments: { target: session, text: "printf '%s\\n' \"$((8 * 7))\"" },
     });
     await client.callTool({
       name: "tmux_send_keys",
@@ -69,7 +70,7 @@ test("MCP stdio server exposes a full persistent terminal workflow", async () =>
 
     const wait = await client.callTool({
       name: "tmux_wait_for_output",
-      arguments: { target: session, text: "typed text works", timeout_ms: 2000 },
+      arguments: { target: session, text: "56", timeout_ms: 2000 },
     });
     assert.match(wait.content[0].text, /"matched": true/);
 
@@ -163,9 +164,9 @@ test("MCP stdio server exposes a full persistent terminal workflow", async () =>
     const godSession = `${session}-god`;
     const god = await client.callTool({
       name: "tmux_god_mode_terminal",
-      arguments: { name: godSession, cwd: root, command: "printf 'god mode ready\\n'" },
+      arguments: { name: godSession, cwd: root, command: "printf '%s\\n' \"$((9 * 7))\"" },
     });
-    assert.match(god.structuredContent.output, /god mode ready/);
+    assert.match(god.structuredContent.output, /^63$/m);
     assert.ok(god.structuredContent.pane.startsWith("%"));
     await client.callTool({
       name: "tmux_kill_target",
