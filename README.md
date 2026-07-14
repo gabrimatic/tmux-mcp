@@ -46,11 +46,7 @@ Requirements:
 - tmux
 - Codex CLI or any MCP client that supports stdio servers
 
-```bash
-npm install -g @gabrimatic/tmux-mcp
-```
-
-For local development:
+Install from source (an npm package is on the way):
 
 ```bash
 git clone https://github.com/gabrimatic/tmux-mcp.git
