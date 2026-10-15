@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.0
+## 0.2.0 - 2026-10-15
 
 - Migrated to the v2 MCP TypeScript SDK (`@modelcontextprotocol/server`). Tool names, inputs, and outputs are unchanged; protocol versions back to 2024-11-05 still negotiate.
 - `--version` and the MCP server info now report the real package version.
