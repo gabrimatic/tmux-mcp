@@ -30,7 +30,7 @@ real shell, dev server, REPL, TUI, debugger
 | Create a persistent terminal | `tmux_create_session`, `tmux_god_mode_terminal` |
 | Type text or commands incrementally | `tmux_send_text`, `tmux_run_command` |
 | Send special keys | `tmux_send_keys`, `tmux_interrupt` |
-| Read terminal state | `tmux_capture_output`, `tmux_wait_for_output` |
+| Read terminal state | `tmux_list_sessions`, `tmux_capture_output`, `tmux_wait_for_output` |
 | Manage layout | `tmux_create_window`, `tmux_split_pane`, `tmux_resize_pane`, `tmux_list_panes` |
 | Stream future pane output to a file | `tmux_start_logging`, `tmux_stop_logging` |
 | Let a human attach | `tmux_attach_hint` |

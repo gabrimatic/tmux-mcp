@@ -87,7 +87,8 @@ export function createServer(config: ServerConfig): McpServer {
       mimeType: "application/jsonl",
     },
     async (uri, { tail }) => {
-      const count = Math.max(1, Math.min(Number(tail), 500));
+      const requested = Number.parseInt(String(tail), 10);
+      const count = Number.isFinite(requested) ? Math.max(1, Math.min(requested, 500)) : 100;
       const text = await readFile(config.auditLogPath, "utf8").catch(() => "");
       return {
         contents: [{ uri: uri.href, text: text.split("\n").filter(Boolean).slice(-count).join("\n") }],

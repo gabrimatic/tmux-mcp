@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.2 - 2026-10-15
+
+- `tmux_send_text` and `tmux_run_command` now type text that starts with `-` literally instead of tmux reading it as flags.
+- A trailing `;` in sent text, startup commands, window names, or paths is no longer dropped or treated as a tmux command separator.
+- The `tmux-mcp://audit/{tail}` resource falls back to 100 lines when `tail` is not a number instead of returning the whole log.
+
 ## 0.2.1 - 2026-10-15
 
 - README Quick Start now installs from npm: `npm install -g @gabrimatic/tmux-mcp`.

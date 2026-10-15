@@ -34,8 +34,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Minimum supported runtime (engines) and the newest release line.
-        node: [22, 26]
+        # Minimum supported runtime (engines), the active LTS, and the newest release line.
+        node: [22, 24, 26]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

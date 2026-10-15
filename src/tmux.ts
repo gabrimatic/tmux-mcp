@@ -26,7 +26,7 @@ export class TmuxController {
     try {
       const { stdout, stderr } = await execFileAsync(
         this.config.tmuxCommand,
-        ["-S", this.config.socketPath, ...args],
+        ["-S", this.config.socketPath, ...args.map(escapeCommandSeparator)],
         {
           timeout: timeoutMs,
           maxBuffer: 10 * 1024 * 1024,
@@ -126,7 +126,7 @@ export class TmuxController {
     const args = ["new-window", "-t", input.target];
     if (input.name) args.push("-n", input.name);
     if (input.cwd) args.push("-c", assertCwdAllowed(input.cwd, this.config));
-    if (input.command) args.push(input.command);
+    if (input.command) args.push("--", input.command);
     await this.exec(args);
   }
 
@@ -144,13 +144,13 @@ export class TmuxController {
     args.push(input.horizontal ? "-h" : "-v");
     if (input.percent) args.push("-p", String(input.percent));
     if (input.cwd) args.push("-c", assertCwdAllowed(input.cwd, this.config));
-    if (input.command) args.push(input.command);
+    if (input.command) args.push("--", input.command);
     await this.exec(args);
   }
 
   async sendText(target: string, text: string, enter = false): Promise<void> {
     assertTarget(target);
-    await this.exec(["send-keys", "-t", target, "-l", text]);
+    await this.exec(["send-keys", "-t", target, "-l", "--", text]);
     if (enter) await this.sendKeys(target, ["Enter"]);
   }
 
@@ -206,6 +206,14 @@ function validateKeys(keys: string[]): void {
       throw new Error(`Unsupported key: ${key}`);
     }
   }
+}
+
+/**
+ * tmux treats an argument that ends in an unescaped ";" as a command separator and drops the ";".
+ * Escaping the trailing ";" as "\;" makes tmux pass the argument through unchanged.
+ */
+function escapeCommandSeparator(arg: string): string {
+  return arg.endsWith(";") ? `${arg.slice(0, -1)}\\;` : arg;
 }
 
 function shellQuote(value: string): string {

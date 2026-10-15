@@ -36,6 +36,11 @@ test("creates a session, sends commands, captures output, and kills cleanly", as
     assert.equal(panes.length, 1);
     assert.equal(panes[0].session, session);
     assert.ok(tmux.attachCommand(session).includes("attach -t"));
+
+    // Text starting with "-" must not be parsed as tmux flags, and a trailing ";" must not be dropped.
+    await tmux.sendText(session, "-tmux-mcp-dash done;", false);
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    assert.match(await tmux.capture(session, 50), /-tmux-mcp-dash done;/);
   } finally {
     await tmux.killTarget("session", session).catch(() => {});
   }
