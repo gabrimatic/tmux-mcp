@@ -46,12 +46,15 @@ Requirements:
 - tmux
 - Codex CLI or any MCP client that supports stdio servers
 
-Install the latest release from GitHub (the build runs during install):
+Install the latest release tarball from GitHub Releases:
 
 ```bash
-npm install -g github:gabrimatic/tmux-mcp#v0.2.0
+npm install -g --allow-remote=root \
+  https://github.com/gabrimatic/tmux-mcp/releases/download/v0.2.0/gabrimatic-tmux-mcp-0.2.0.tgz
 tmux-mcp --version
 ```
+
+`--allow-remote=root` is needed on npm 12 and later, which refuse tarball URLs by default; older npm ignores it.
 
 Or work from a clone:
 
