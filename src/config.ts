@@ -2,6 +2,7 @@ import { homedir, tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import type { ServerConfig } from "./types.js";
 import { assertShellPath } from "./policy.js";
+import { VERSION } from "./version.js";
 
 const DEFAULT_SOCKET = join(tmpdir(), `tmux-mcp-${process.getuid?.() ?? "user"}.sock`);
 const DEFAULT_AUDIT_LOG = join(
@@ -77,7 +78,7 @@ export function parseArgs(argv: string[]): ServerConfig {
         return config;
       case "--version":
       case "-v":
-        process.stdout.write("0.1.0\n");
+        process.stdout.write(`${VERSION}\n`);
         process.exit(0);
         return config;
       default:

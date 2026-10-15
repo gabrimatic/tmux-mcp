@@ -1,12 +1,13 @@
 import { readFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
-import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { ToolAnnotations } from "@modelcontextprotocol/sdk/types.js";
+import { McpServer, ResourceTemplate } from "@modelcontextprotocol/server";
+import type { ToolAnnotations } from "@modelcontextprotocol/server";
 import type { ServerConfig } from "./types.js";
 import { TmuxController } from "./tmux.js";
 import { AuditLogger } from "./audit.js";
 import { assertCommandAllowed } from "./policy.js";
+import { VERSION } from "./version.js";
 
 const Target = z.string().min(1).describe("tmux target: session, session:window.pane, or %pane_id");
 const SessionName = z.string().min(1).max(80).describe("tmux session name");
@@ -61,7 +62,7 @@ export function createServer(config: ServerConfig): McpServer {
   const audit = new AuditLogger(config);
   const server = new McpServer({
     name: "tmux-mcp",
-    version: "0.1.0",
+    version: VERSION,
   });
 
   server.registerResource(
@@ -436,9 +437,14 @@ function tool<T extends z.ZodRawShape>(
   audit: AuditLogger,
   name: string,
   spec: ToolSpec<T>,
-  handler: (input: any) => Promise<Record<string, unknown>>,
+  handler: (input: z.infer<z.ZodObject<T>>) => Promise<Record<string, unknown>>,
 ): void {
-  server.registerTool(name, spec as any, async (input: any) => {
+  const config = {
+    ...spec,
+    inputSchema: z.object(spec.inputSchema),
+    outputSchema: z.object(spec.outputSchema),
+  };
+  server.registerTool(name, config, async (input: z.infer<z.ZodObject<T>>) => {
     const correlation_id = randomUUID();
     try {
       const output = await handler(input);

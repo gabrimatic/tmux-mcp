@@ -1,14 +1,15 @@
 {
   "name": "@gabrimatic/tmux-mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A tmux-backed MCP server that gives AI agents a persistent, human-attachable terminal.",
   "type": "module",
   "bin": {
     "tmux-mcp": "./dist/src/cli.js"
   },
   "files": [
-    "dist",
+    "dist/src",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "scripts": {
@@ -18,7 +19,7 @@
     "test:e2e": "npm run build && node --test tests/e2e.test.js",
     "lint": "eslint .",
     "check": "npm run typecheck && npm test",
-    "prepack": "npm run build"
+    "prepare": "npm run build"
   },
   "keywords": [
     "mcp",
@@ -42,14 +43,16 @@
     "node": ">=22"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.29.0",
-    "zod": "^4.4.3"
+    "@modelcontextprotocol/server": "^2.3.1",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/node": "^25.9.4",
-    "eslint": "^10.6.0",
-    "typescript": "^6.0.3",
-    "typescript-eslint": "^8.62.1"
+    "@modelcontextprotocol/client": "^2.3.1",
+    "@types/node": "^26.6.5",
+    "@typescript/native": "npm:typescript@^7.0.2",
+    "eslint": "^10.12.0",
+    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "typescript-eslint": "^8.71.2"
   }
 }

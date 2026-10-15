@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import { access, mkdtemp, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { Client } from "@modelcontextprotocol/client";
+import { StdioClientTransport } from "@modelcontextprotocol/client/stdio";
 
 test("MCP stdio server exposes a full persistent terminal workflow", async () => {
   const root = await mkdtemp(join(tmpdir(), "tmux-mcp-e2e-"));
