@@ -1,10 +1,15 @@
 # Changelog
 
+## 0.2.1 - 2026-10-15
+
+- README Quick Start now installs from npm: `npm install -g @gabrimatic/tmux-mcp`.
+- Normalized the `bin` path to `dist/src/cli.js` (no leading `./`) so npm no longer warns at publish time. No behavior change; the `tmux-mcp` command is the same.
+
 ## 0.2.0 - 2026-10-15
 
 - Migrated to the v2 MCP TypeScript SDK (`@modelcontextprotocol/server`). Tool names, inputs, and outputs are unchanged; protocol versions back to 2024-11-05 still negotiate.
 - `--version` and the MCP server info now report the real package version.
-- Installable from the prebuilt tarball attached to the GitHub release (see README Quick Start).
+- Prebuilt tarball attached to the GitHub release.
 - Builds with TypeScript 7; dependencies brought to current releases (zod 4.6, eslint 10.12, typescript-eslint 8.71, @types/node 26).
 - Shipped package now includes the changelog and excludes stale build output.
 - Fixed the npm executable path so the published `tmux-mcp` bin points at the built CLI.

@@ -16,3 +16,10 @@ test("package executable points at the built CLI", async () => {
   assert.equal(result.status, 0);
   assert.match(result.stdout, /Usage:/);
 });
+
+test("bin paths are in npm's normalized form", async () => {
+  const packageJson = JSON.parse(await readFile("package.json", "utf8"));
+  for (const [name, target] of Object.entries(packageJson.bin)) {
+    assert.doesNotMatch(target, /^\.\.?\//, `bin[${name}] must not start with ./ or ../`);
+  }
+});

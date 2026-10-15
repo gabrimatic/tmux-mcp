@@ -40,5 +40,9 @@ jobs:
           node -e "const tag = process.env.GITHUB_REF_NAME.replace(/^v/, ''); const pkg = require('./package.json'); if (pkg.version !== tag) { throw new Error('Tag v' + tag + ' does not match package version ' + pkg.version); }"
       - run: npm run lint
       - run: npm run check
+      - name: Package dry run (fail on bin warnings)
+        run: |
+          npm pack --dry-run 2>&1 | tee "$RUNNER_TEMP/pack.log"
+          if grep -Ei 'bin\[|no bin file' "$RUNNER_TEMP/pack.log"; then echo "::error::npm rewrote or dropped the bin entry"; exit 1; fi
       - name: Publish package
         run: npm publish --access public

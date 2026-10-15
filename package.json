@@ -1,10 +1,10 @@
 {
   "name": "@gabrimatic/tmux-mcp",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A tmux-backed MCP server that gives AI agents a persistent, human-attachable terminal.",
   "type": "module",
   "bin": {
-    "tmux-mcp": "./dist/src/cli.js"
+    "tmux-mcp": "dist/src/cli.js"
   },
   "files": [
     "dist/src",
