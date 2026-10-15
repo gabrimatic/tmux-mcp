@@ -46,13 +46,19 @@ Requirements:
 - tmux
 - Codex CLI or any MCP client that supports stdio servers
 
-Install from source (an npm package is on the way):
+Install the latest release from GitHub (the build runs during install):
+
+```bash
+npm install -g github:gabrimatic/tmux-mcp#v0.2.0
+tmux-mcp --version
+```
+
+Or work from a clone:
 
 ```bash
 git clone https://github.com/gabrimatic/tmux-mcp.git
 cd tmux-mcp
 npm install
-npm run build
 node dist/src/cli.js --help
 ```
 
@@ -62,19 +68,19 @@ Add the server to `~/.codex/config.toml`:
 
 ```toml
 [mcp_servers.tmux]
-command = "/opt/homebrew/bin/node"
+command = "tmux-mcp"
 args = [
-  "/Users/soroush/Developer/Projects/tmux-mcp/dist/src/cli.js",
   "--socket", "/tmp/codex-agent-tmux.sock",
   "--shell", "/bin/zsh",
-  "--allowed-root", "/Users/soroush/Developer/Projects",
-  "--audit-log", "/Users/soroush/.local/state/tmux-mcp/audit.jsonl"
+  "--allowed-root", "/path/to/your/projects",
+  "--audit-log", "/path/to/state/tmux-mcp/audit.jsonl"
 ]
-cwd = "/Users/soroush/Developer/Projects/tmux-mcp"
 default_tools_approval_mode = "approve"
 startup_timeout_sec = 10.0
 tool_timeout_sec = 60.0
 ```
+
+When running from a clone, set `command` to your `node` binary and put the absolute path to `dist/src/cli.js` first in `args`.
 
 The dedicated socket keeps agent-owned sessions separate from normal tmux sessions.
 
@@ -199,7 +205,7 @@ This does not replace the agent’s normal approval and sandbox rules. `tmux_sen
 tmux-mcp \
   --socket /tmp/codex-agent-tmux.sock \
   --shell /bin/zsh \
-  --allowed-root /Users/soroush/Developer/Projects \
+  --allowed-root /path/to/your/projects \
   --audit-log ~/.local/state/tmux-mcp/audit.jsonl
 ```
 
@@ -215,16 +221,18 @@ Options:
 | `--audit-log <path>` | JSONL audit path |
 | `--audit-include-output` | include captured text in audit log |
 | `--max-capture-lines <n>` | capture limit per call |
+| `--version`, `-v` | print the version |
+| `--help`, `-h` | print usage |
 
 ## Development
 
 ```bash
-npm install
-npm run build
-npm test
+npm install      # also builds dist/
 npm run lint
-npm run check
+npm run check    # typecheck + build + tests (needs tmux)
 ```
+
+TypeScript 7 compiles the project (`tsc`). ESLint's TypeScript parser still needs the TypeScript 6 API, so `typescript` is aliased to `@typescript/typescript6` for linting only.
 
 The test suite covers:
 
